@@ -24,8 +24,8 @@ public class TP3 {
 			// Country,City,AccentCity,Region,Population,Latitude,Longitude
 			String line = value.toString();
 			String[] splitted = line.split(",");
-
 			context.getCounter("tp3", "nbCities").increment(1);
+
 			if (splitted[4].length() == 0 || splitted[4].equals("Population"))
 				return;
 
