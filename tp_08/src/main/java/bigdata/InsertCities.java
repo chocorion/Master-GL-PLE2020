@@ -30,7 +30,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
 
-public class HadoopVersion {
+public class InserCities extends Configured implements Tool {
     private static final byte[] TABLE_NAME = Bytes.toBytes("rnavarro-td8");
     private static final byte[][] FAMILIES = {
         Bytes.toBytes("loc"),
@@ -40,8 +40,6 @@ public class HadoopVersion {
     };
     
 	public static class SimpleMapper extends Mapper<Object, Text, Text, NullWritable> {
-
-
 		public void map(Object key, Text value, Context context)
 			throws IOException, InterruptedException {
 
@@ -92,45 +90,10 @@ public class HadoopVersion {
         }
     }
 
-    
-    public static class HadoopInitializer extends Configured implements Tool {
 
-        public static void createOrOverwrite(Admin admin, HTableDescriptor table) throws IOException {
-			if (admin.tableExists(table.getTableName())) {
-				admin.disableTable(table.getTableName());
-				admin.deleteTable(table.getTableName());
-            }
-            
-			admin.createTable(table);
-		}
-        
-        public static void createTable(Connection connection) {
-            try (Admin admin = connection.getAdmin()) {
-				HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(TABLE_NAME));
-                
-                for (byte[] family : FAMILIES) {
-                    tableDescriptor.addFamily(new HColumnDescriptor(family));
-                }
-
-                createOrOverwrite(admin, tableDescriptor);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-        }
-        
-        public int run(String[] args) throws IOException {
-            Connection connection = ConnectionFactory.createConnection(getConf());
-            createTable(connection);
-            return 0;
-        }
-    }
 	
-	public static void main(String[] args) throws Exception {
-        Configuration conf = HBaseConfiguration.create();
-        int hbaseSetupExitCode = ToolRunner.run(conf, new HadoopInitializer(), args);
-
-		Job job = Job.getInstance(conf, "TP_08");
+	public int run(String[] args) throws Exception {
+		Job job = Job.getInstance(getConf(), "TP_08");
 
 		job.setNumReduceTasks(1);
 		job.setJarByClass(HadoopVersion.class);
@@ -138,16 +101,10 @@ public class HadoopVersion {
 		job.setMapperClass(SimpleMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(NullWritable.class);
-        
-//        job.setReducerClass(SimpleReducer.class);
-//		job.setOutputKeyClass(NullWritable.class);
-//		job.setOutputValueClass(NullWritable.class);
+
 		
 		job.setInputFormatClass(TextInputFormat.class);
 		FileInputFormat.addInputPath(job, new Path("/users/robin/worldcitiespop.txt"));
-        
-        //job.setOutputFormatClass(TextOutputFormat.class);
-		//FileOutputFormat.setOutputPath(job, new Path("/users/robin/test-tp-08"));
 
         TableMapReduceUtil.initTableReducerJob(
                 "rnavarro-td8",
@@ -155,6 +112,6 @@ public class HadoopVersion {
                 job
         );
 
-		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		return job.waitForCompletion(true);
 	}
 }
