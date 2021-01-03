@@ -1,36 +1,28 @@
 package bigdata;
 
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
 
-public class InserCities extends Configured implements Tool {
+public class InsertCities extends Configured implements Tool {
     private static final byte[] TABLE_NAME = Bytes.toBytes("rnavarro-td8");
     private static final byte[][] FAMILIES = {
         Bytes.toBytes("loc"),
@@ -93,10 +85,10 @@ public class InserCities extends Configured implements Tool {
 
 	
 	public int run(String[] args) throws Exception {
-		Job job = Job.getInstance(getConf(), "TP_08");
+		Job job = Job.getInstance(getConf(), "InsertCities");
 
 		job.setNumReduceTasks(1);
-		job.setJarByClass(HadoopVersion.class);
+		job.setJarByClass(InsertCities.class);
 		
 		job.setMapperClass(SimpleMapper.class);
 		job.setMapOutputKeyClass(Text.class);
@@ -112,6 +104,6 @@ public class InserCities extends Configured implements Tool {
                 job
         );
 
-		return job.waitForCompletion(true);
+		return job.waitForCompletion(true)? 0 : 1;
 	}
 }
